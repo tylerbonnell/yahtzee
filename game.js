@@ -2,7 +2,13 @@ window.onload = function() {
   serverAddress = 'http://localhost:3000';
   socket = io(serverAddress);
   socket.on('connect', function() {
-    console.log("connected!");
+    $('#loading').innerHTML = "";
+    $('#name').onkeydown = function(e) {
+      if (e.keyCode == 13 && $('#name').value.length > 0) {
+        socket.emit('set name', $('#name').value);
+        $('#name').style.visibility = 'hidden';
+      }
+    }
   });
   
   socket.on('show dice', showDice);
@@ -38,4 +44,8 @@ function dieString(vals) {
          str3.trim() + "\n" + 
          str4.trim() + "\n" + 
          str1.trim();
+}
+
+function $(el) {
+  return document.querySelector(el);
 }
