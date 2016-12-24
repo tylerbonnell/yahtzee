@@ -1,18 +1,13 @@
 window.onload = function() {
-  // testing basic functionality
-  var x = [0, 0, 0, 0, 0, 0];
-  for (var i = 0; i < 1000; i++) {
-    x[rollDie()]++;
-  }
-  console.log(x);
+  serverAddress = 'http://localhost:3000';
+  socket = io(serverAddress);
+  socket.on('connect', function() {
+    console.log("connected!");
+  });
+  
   for (var i = 0; i < 6; i++) {
     console.log(dieString(i));
   }
-}
-
-// Generate a number [0, 5]
-function rollDie() {
-  return Math.floor(Math.random() * 6);
 }
 
 function dieString(val) {

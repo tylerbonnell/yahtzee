@@ -1,0 +1,15 @@
+{
+  "name": "yahtzee",
+  "version": "1.0.0",
+  "description": "roll some dice you big nerd",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tylerbonnell/yahtzee.git"
+  },
+  "author": "Tyler Bonnell",
+  "bugs": {
+    "url": "https://github.com/tylerbonnell/yahtzee/issues"
+  },
+  "homepage": "https://bonn.pw/yahtzee"
+}
