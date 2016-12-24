@@ -5,14 +5,37 @@ window.onload = function() {
     console.log("connected!");
   });
   
-  for (var i = 0; i < 6; i++) {
-    console.log(dieString(i));
-  }
+  socket.on('show dice', showDice);
 }
 
-function dieString(val) {
+// diceState format: 
+// {
+//   player: <string>,
+//   saved: <array of {id, val}>
+//   unsaved: <array of {id, val}>
+// }
+function showDice(diceState) {
+  
+}
+
+function dieString(vals) {
   var d1 = ["   ", "  *", "*  ", "* *", "* *", "* *"];
   var d2 = [" * ", "   ", " * ", "   ", " * ", "* *"];
   var d3 = ["   ", "*  ", "  *", "* *", "* *", "* *"];
-  return "+---+\n|" + d1[val] + "|\n|" + d2[val] + "|\n|" + d3[val] + "|\n+---+";
+  var str1 = "";
+  var str2 = "";
+  var str3 = "";
+  var str4 = "";
+  var gap = "    ";
+  for (var i = 0; i < vals.length; i++) {
+    str1 += "+---+" + gap;
+    str2 += d1[vals[i]] + gap;
+    str3 += d2[vals[i]] + gap;
+    str3 += d3[vals[i]] + gap;
+  }
+  return str1.trim() + "\n" + 
+         str2.trim() + "\n" + 
+         str3.trim() + "\n" + 
+         str4.trim() + "\n" + 
+         str1.trim();
 }

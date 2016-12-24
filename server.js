@@ -4,25 +4,29 @@ var io = require('socket.io')(srv);
 io.on('connection', function(socket){
   socket.emit('hi');
   
-  socket.on('join game', function() {
-    var game = findOpenGame();
-    game.addPlayer(socket.id);
+  var game = findOpenGame();
+  game.addPlayer(socket.id);
+  
+  socket.on('roll', function() {
+  });
+  
+  socket.on('save die', function(dieNum) {
+  });
+  
+  socket.on('unsave die', function(dieNum) {
   });
   
   socket.on('restart', function() {
-    if (playerToGameMap[socket.id])
-      playerToGameMap[socket.id].restart();
-  })
+    game.restart();
+  });
   
   socket.on('disconnect', function() {
-    if(playerToGameMap[socket.id])
-      playerToGameMap[socket.id].removePlayer(socket.id);
+    game.removePlayer(socket.id);
   });
 });
 
 
 var games = [];
-var playerToGameMap = {};
 function findOpenGame() {
   for (var i = 0; i < games.length + 1; i++) {
     var g = games[i];
@@ -44,23 +48,21 @@ function Game() {
     if (this.p1 && this.p2)
       return;
     if (!this.p1)
-      p1 = player;
+      this.p1 = player;
     else if (!this.p2)
-      p2 = player;
-    playerToGameMap[player] = this;
+      this.p2 = player;
     if (this.p1 && this.p2)
       this.startGame();
   }
   
   this.removePlayer = function(player) {
-    var p = null;
-    if (p1 == player)
-      p1 = null;
-    else if (p2 == player)
-      p2 = null;
+    if (this.p1 == player)
+      this.p1 = null;
+    else if (this.p2 == player)
+      this.p2 = null;
     else
       return;
-    
+    this.currentPlayer = this.p1 || this.p2;
   }
   
   this.startGame = function() {
