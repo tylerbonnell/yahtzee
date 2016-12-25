@@ -38,6 +38,7 @@ window.onload = function() {
 // }
 function showDice(diceState) {
   console.log(diceState);
+  $("#unsavedDice").innerHTML = dieString(diceState.unsaved);
 }
 
 function startTurn(scores, isCurrentPlayer) {
@@ -96,7 +97,7 @@ function padRight(str, len) {
   return str;
 }
 
-function dieString(vals) {
+function dieString(dice) {
   var d1 = ["   ", "  *", "*  ", "* *", "* *", "* *"];
   var d2 = [" * ", "   ", " * ", "   ", " * ", "* *"];
   var d3 = ["   ", "*  ", "  *", "* *", "* *", "* *"];
@@ -105,11 +106,11 @@ function dieString(vals) {
   var str3 = "";
   var str4 = "";
   var gap = "    ";
-  for (var i = 0; i < vals.length; i++) {
+  for (var i = 0; i < dice.length; i++) {
     str1 += "+---+" + gap;
-    str2 += d1[vals[i]] + gap;
-    str3 += d2[vals[i]] + gap;
-    str3 += d3[vals[i]] + gap;
+    str2 += "|" + d1[dice[i].val] + "|" + gap;
+    str3 += "|" + d2[dice[i].val] + "|" + gap;
+    str4 += "|" + d3[dice[i].val] + "|" + gap;
   }
   return str1.trim() + "\n" + 
          str2.trim() + "\n" + 
