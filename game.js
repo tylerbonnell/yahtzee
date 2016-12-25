@@ -26,7 +26,7 @@ window.onload = function() {
   });
   
   
-  socket.on('show scores', showScores);
+  socket.on('start turn', startTurn);
   
   socket.on('show dice', showDice);
 }
@@ -37,10 +37,10 @@ window.onload = function() {
 //   unsaved: <array of {id, val}>
 // }
 function showDice(diceState) {
-  
+  console.log(diceState);
 }
 
-function showScores(scores, isCurrentPlayer) {
+function startTurn(scores, isCurrentPlayer) {
   $("#roll").disabled = !isCurrentPlayer;
   console.log(isCurrentPlayer ? "Your turn" : (names[1 - playerNum] + "'s turn"));
   var str = "";
@@ -49,6 +49,7 @@ function showScores(scores, isCurrentPlayer) {
   var p2sum1 = 0;
   var p1total = 0;
   var p2total = 0;
+  console.log(scores);
   for (var j = 0; j < 13; j++) {
     scores.p1[j] |= 0;
     scores.p2[j] |= 0;

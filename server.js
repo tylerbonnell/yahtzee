@@ -84,10 +84,10 @@ function Game() {
     this.currentPlayer = this.p1;
     this.rollData = {
       dice: [],
-      saved: []  // array of bools
+      saved: [false, false, false, false, false]
     };
-    io.to(this.p1).emit('show scores', {p1: [], p2: [], possible: []}, this.p1 == this.currentPlayer);
-    io.to(this.p2).emit('show scores', {p1: [], p2: [], possible: []}, this.p2 == this.currentPlayer);
+    io.to(this.p1).emit('start turn', {p1: [], p2: [], possible: []}, this.p1 == this.currentPlayer);
+    io.to(this.p2).emit('start turn', {p1: [], p2: [], possible: []}, this.p2 == this.currentPlayer);
   };
   
   this.roll = function(id) {
@@ -98,14 +98,14 @@ function Game() {
         this.rollData.dice[i] = rollDie();
       }
     }
-    var scores = calculatePossibleScores(this.rollData.dice);
-    var shownScores = {
-      p1: this.p1Score,
-      p2: this.p2Score,
-      possible: scores
-    }
-    io.to(this.p1).emit('show scores', shownScores, this.p1 == this.currentPlayer);
-    io.to(this.p2).emit('show scores', shownScores, this.p2 == this.currentPlayer);
+    // var scores = calculatePossibleScores(this.rollData.dice);
+    // var shownScores = {
+    //   p1: this.p1Score,
+    //   p2: this.p2Score,
+    //   possible: scores
+    // }
+    // io.to(this.p1).emit('start turn', shownScores, this.p1 == this.currentPlayer);
+    // io.to(this.p2).emit('start turn', shownScores, this.p2 == this.currentPlayer);
     var dice = dataToDiceState(this.rollData);
     io.to(this.p1).emit('show dice', dice);
     io.to(this.p2).emit('show dice', dice);
@@ -142,24 +142,21 @@ function rollDie() {
 // Takes a 5-long array containing the dice values
 // Returns 13-long array with each categorical score
 function calculatePossibleScores(dice) {
-  var count1 = countDieValues(dice, 0);
-  var count2 = countDieValues(dice, 1);
-  var count3 = countDieValues(dice, 2);
-  var count4 = countDieValues(dice, 3);
-  var count5 = countDieValues(dice, 4);
-  var count6 = countDieValues(dice, 5);
-  var sum = count1 + count2 + count3 + count4 + count5 + count6;
+  counts = getCounts(dice);
+  var sum = 0;
+  for (var i = 0; i < counts.length; i++)
+    sum += counts * (i + 1);
   
   return [
-    count1, 
-    count2, 
-    count3, 
-    count4, 
-    count5, 
-    count6,
-    hasNumOfAKind(dice, 3) ? sum : 0,
-    hasNumOfAKind(dice, 4) ? sum : 0,
-    fullHouseCount(dice),
+    counts[0], 
+    counts[1] * 2, 
+    counts[2] * 3, 
+    counts[3] * 4, 
+    counts[4] * 5, 
+    counts[5] * 6,
+    hasNumOfAKind(counts, 3) ? sum : 0,
+    hasNumOfAKind(counts, 4) ? sum : 0,
+    fullHouseCount(counts),
     hasRunOf(dice, 4) ? 30 : 0,
     hasRunOf(dice, 5) ? 40 : 0,
     sum,
@@ -168,38 +165,37 @@ function calculatePossibleScores(dice) {
 }
 
 // Used for counting 1-6 amounts
-function countDieValues(dice, num) {
-  var count = 0;
+function getCounts(dice) {
+  counts = [0, 0, 0, 0, 0, 0];
   for (var i = 0; i < dice.length; i++) {
-    if (dice[i] == num)
-      count++;
+    counts[dice[i]]++;
   }
-  return count * num;
+  return counts;
 }
 
-function hasNumOfAKind(dice, amount) {
-  var hasAmount = 0;
-  for (var i = 0; i < dice.length; i++)
-    hasAmount |= dice[i] >= amount;
-  return hasAmount;
+function hasNumOfAKind(counts, amount) {
+  for (var i = 0; i < counts.length; i++)
+    if (counts[i] >= amount)
+      return true;
+  return false;
 }
 
-function fullHouseCount(dice) {
-  for (var i = 0; i < dice.length; i++) {
-    for (var j = 0; j < dice.length; j++) {
+function fullHouseCount(counts) {
+  for (var i = 0; i < counts.length; i++) {
+    for (var j = 0; j < counts.length; j++) {
       if (j == i)
         continue;
-      if (dice[i] == 3 && dice[j] == 2)
+      if (counts[i] == 3 && counts[j] == 2)
         return 25;
     }
   }
   return 0;
 }
 
-function hasRunOf(dice, run) {
+function hasRunOf(counts, run) {
   var count = 0;
-  for (var i = 0; i < dice.length; i++) {
-    if (dice[i] == 0)
+  for (var i = 0; i < counts.length; i++) {
+    if (counts[i] == 0)
       count = 0;
     else
       count++;
