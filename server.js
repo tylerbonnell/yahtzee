@@ -7,11 +7,11 @@ io.on('connection', function(socket){
   
   socket.on('set name', function(name) {
     game = findOpenGame();
-    game.addPlayer(socket.id);
+    game.addPlayer(socket.id, name);
   });
   
   socket.on('roll', function() {
-    game.roll();
+    game.roll(socket.id);
   });
   
   socket.on('save die', function(dieNum) {
@@ -51,9 +51,10 @@ function Game() {
   this.rollData = null;
   this.p1Score;
   this.p2Score;
+  this.names = {};
   
   // tracks players using player id (which is really just the socket id)
-  this.addPlayer = function(player) {
+  this.addPlayer = function(player, name) {
     if (this.p1 && this.p2)
       return;
     if (!this.p1)
@@ -61,6 +62,7 @@ function Game() {
     else if (!this.p2)
       this.p2 = player;
     console.log("added player " + player);
+    this.names[player] = name;
     if (this.p1 && this.p2)
       this.startGame();
   };
@@ -77,8 +79,8 @@ function Game() {
   
   this.startGame = function() {
     console.log("starting game");
-    io.to(this.p1).emit('starting game');
-    io.to(this.p2).emit('starting game');
+    io.to(this.p1).emit('starting game', [this.names[this.p1], this.names[this.p2]], 0);
+    io.to(this.p2).emit('starting game', [this.names[this.p1], this.names[this.p2]], 1);
     this.currentPlayer = this.p1;
     this.rollData = {
       dice: [],
@@ -88,7 +90,9 @@ function Game() {
     io.to(this.p2).emit('show scores', {p1: [], p2: [], possible: []}, this.p2 == this.currentPlayer);
   };
   
-  this.roll = function() {
+  this.roll = function(id) {
+    if (id != this.currentPlayer)
+      return;
     for (var i = 0; i < this.rollData.saved.length; i++) {
       if (!this.rollData.saved[i]) {
         this.rollData.dice[i] = rollDie();
@@ -102,6 +106,9 @@ function Game() {
     }
     io.to(this.p1).emit('show scores', shownScores, this.p1 == this.currentPlayer);
     io.to(this.p2).emit('show scores', shownScores, this.p2 == this.currentPlayer);
+    var dice = dataToDiceState(this.rollData);
+    io.to(this.p1).emit('show dice', dice);
+    io.to(this.p2).emit('show dice', dice);
   };
   
   this.addScore = function(category) {

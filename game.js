@@ -1,4 +1,5 @@
-var name;
+var names;
+var playerNum;
 
 window.onload = function() {
   serverAddress = 'http://localhost:3000';
@@ -18,8 +19,10 @@ window.onload = function() {
     }
   });
   
-  socket.on('starting game', function() {
+  socket.on('starting game', function(playerNames, myId) {
     console.log("starting game!");
+    names = playerNames;
+    playerNum = myId;
   });
   
   
@@ -38,8 +41,8 @@ function showDice(diceState) {
 }
 
 function showScores(scores, isCurrentPlayer) {
-  console.log("show the scores");
-  $("#roll").style.disabled = isCurrentPlayer;
+  $("#roll").disabled = !isCurrentPlayer;
+  console.log(isCurrentPlayer ? "Your turn" : (names[1 - playerNum] + "'s turn"));
   var str = "";
   var i = -1;
   var p1sum1 = 0;
