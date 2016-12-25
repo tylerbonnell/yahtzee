@@ -37,8 +37,19 @@ window.onload = function() {
 //   unsaved: <array of {id, val}>
 // }
 function showDice(diceState) {
-  console.log(diceState);
   $("#unsavedDice").innerHTML = dieString(diceState.unsaved);
+  $("#savedDice").innerHTML = dieString(diceState.saved);
+  for (var i = 0; i < 5; i++) {
+    var all = document.querySelectorAll(".switchDie" + i);
+    console.log(all);
+    for (var j = 0; j < all.length; j++) {
+      all[j].onclick = function() {
+        num = Number(this.className.substring(9));  // because js is fucked
+        console.log("clicked die " + num);
+        socket.emit('toggle die', num);
+      }
+    }
+  }
 }
 
 function startTurn(scores, isCurrentPlayer) {
@@ -107,10 +118,12 @@ function dieString(dice) {
   var str4 = "";
   var gap = "    ";
   for (var i = 0; i < dice.length; i++) {
-    str1 += "+---+" + gap;
-    str2 += "|" + d1[dice[i].val] + "|" + gap;
-    str3 += "|" + d2[dice[i].val] + "|" + gap;
-    str4 += "|" + d3[dice[i].val] + "|" + gap;
+    var span = "<span class=\"switchDie" + dice[i].id + "\">"
+    var sspan = "</span>"
+    str1 += span + "+---+" + sspan + gap;
+    str2 += span + "|" + d1[dice[i].val] + "|" + sspan + gap;
+    str3 += span + "|" + d2[dice[i].val] + "|" + sspan + gap;
+    str4 += span + "|" + d3[dice[i].val] + "|" + sspan + gap;
   }
   return str1.trim() + "\n" + 
          str2.trim() + "\n" + 

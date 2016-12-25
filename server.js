@@ -14,10 +14,8 @@ io.on('connection', function(socket){
     game.roll(socket.id);
   });
   
-  socket.on('save die', function(dieNum) {
-  });
-  
-  socket.on('unsave die', function(dieNum) {
+  socket.on('toggle die', function(dieNum) {
+    game.toggleDieSaved(socket.id, dieNum)
   });
   
   socket.on('restart', function() {
@@ -98,14 +96,7 @@ function Game() {
         this.rollData.dice[i] = rollDie();
       }
     }
-    // var scores = calculatePossibleScores(this.rollData.dice);
-    // var shownScores = {
-    //   p1: this.p1Score,
-    //   p2: this.p2Score,
-    //   possible: scores
-    // }
-    // io.to(this.p1).emit('start turn', shownScores, this.p1 == this.currentPlayer);
-    // io.to(this.p2).emit('start turn', shownScores, this.p2 == this.currentPlayer);
+    
     var dice = dataToDiceState(this.rollData);
     io.to(this.p1).emit('show dice', dice);
     io.to(this.p2).emit('show dice', dice);
@@ -117,8 +108,14 @@ function Game() {
     scoreCard[category] = scores[category];
   }
   
-  this.restart = function() {
-    
+  this.toggleDieSaved = function(player, die) {
+    if (player != this.currentPlayer)
+      return;
+    console.log("toggling die " + die);
+    this.rollData.saved[die] = !this.rollData.saved[die];
+    var dice = dataToDiceState(this.rollData);
+    io.to(this.p1).emit('show dice', dice);
+    io.to(this.p2).emit('show dice', dice);
   };
 }
 
