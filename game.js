@@ -29,6 +29,10 @@ window.onload = function() {
   socket.on('start turn', startTurn);
   
   socket.on('show dice', showDice);
+  
+  socket.on('no more turns', function() {
+    $("#roll").disabled = true;
+  });
 }
 
 // diceState format: 
@@ -54,7 +58,7 @@ function showDice(diceState) {
 
 function startTurn(scores, isCurrentPlayer) {
   $("#roll").disabled = !isCurrentPlayer;
-  console.log(isCurrentPlayer ? "Your turn" : (names[1 - playerNum] + "'s turn"));
+  $("#currentPlayer").innerHTML = isCurrentPlayer ? "Your turn" : (names[1 - playerNum] + "'s turn");
   var str = "";
   var i = -1;
   var p1sum1 = 0;

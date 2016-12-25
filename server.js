@@ -50,6 +50,7 @@ function Game() {
   this.p1Score;
   this.p2Score;
   this.names = {};
+  this.turnsLeft = 0;
   
   // tracks players using player id (which is really just the socket id)
   this.addPlayer = function(player, name) {
@@ -84,6 +85,7 @@ function Game() {
       dice: [],
       saved: [false, false, false, false, false]
     };
+    this.turnsLeft = 3;
     io.to(this.p1).emit('start turn', {p1: [], p2: [], possible: []}, this.p1 == this.currentPlayer);
     io.to(this.p2).emit('start turn', {p1: [], p2: [], possible: []}, this.p2 == this.currentPlayer);
   };
@@ -96,10 +98,12 @@ function Game() {
         this.rollData.dice[i] = rollDie();
       }
     }
-    
+    this.turnsLeft--;
     var dice = dataToDiceState(this.rollData);
     io.to(this.p1).emit('show dice', dice);
     io.to(this.p2).emit('show dice', dice);
+    if (this.turnsLeft == 0)
+      io.to(this.currentPlayer).emit('no more turns');
   };
   
   this.addScore = function(category) {
