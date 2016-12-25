@@ -11,6 +11,7 @@ io.on('connection', function(socket){
   });
   
   socket.on('roll', function() {
+    game.roll();
   });
   
   socket.on('save die', function(dieNum) {
@@ -24,7 +25,8 @@ io.on('connection', function(socket){
   });
   
   socket.on('disconnect', function() {
-    game.removePlayer(socket.id);
+    if (game)
+      game.removePlayer(socket.id);
   });
 });
 
@@ -58,6 +60,7 @@ function Game() {
       this.p1 = player;
     else if (!this.p2)
       this.p2 = player;
+    console.log("added player " + player);
     if (this.p1 && this.p2)
       this.startGame();
   };
@@ -73,11 +76,16 @@ function Game() {
   };
   
   this.startGame = function() {
+    console.log("starting game");
+    io.to(this.p1).emit('starting game');
+    io.to(this.p2).emit('starting game');
     this.currentPlayer = this.p1;
     this.rollData = {
       dice: [],
       saved: []  // array of bools
     };
+    io.to(this.p1).emit('show scores', {p1: [], p2: [], possible: []}, this.p1 == this.currentPlayer);
+    io.to(this.p2).emit('show scores', {p1: [], p2: [], possible: []}, this.p2 == this.currentPlayer);
   };
   
   this.roll = function() {
@@ -87,7 +95,20 @@ function Game() {
       }
     }
     var scores = calculatePossibleScores(this.rollData.dice);
+    var shownScores = {
+      p1: this.p1Score,
+      p2: this.p2Score,
+      possible: scores
+    }
+    io.to(this.p1).emit('show scores', shownScores, this.p1 == this.currentPlayer);
+    io.to(this.p2).emit('show scores', shownScores, this.p2 == this.currentPlayer);
   };
+  
+  this.addScore = function(category) {
+    var scores = calculatePossibleScores(this.rollData.dice);
+    var scoreCard = this.currentPlayer == this.p1 ? this.p1Score : this.p2Score;
+    scoreCard[category] = scores[category];
+  }
   
   this.restart = function() {
     
@@ -96,7 +117,6 @@ function Game() {
 
 function dataToDiceState(data) {
   var res = {
-    player: data.playerName,
     saved: [],
     unsaved: []
   }
